@@ -37,19 +37,23 @@ fi
 > "$OUTPUT_FILE"
 
 # Find and combine all .sieve files
-sieve_files=$(find "$SIEVES_DIR" -type f -name "*.sieve" | sort)
+# Use an array to properly handle filenames with spaces
+sieve_files=()
+while IFS= read -r -d '' file; do
+    sieve_files+=("$file")
+done < <(find "$SIEVES_DIR" -type f -name "*.sieve" -print0 | sort -z)
 
-if [ -z "$sieve_files" ]; then
+if [ ${#sieve_files[@]} -eq 0 ]; then
     echo "Warning: No .sieve files found in '$SIEVES_DIR'."
     exit 0
 fi
 
 # Combine all sieve files
 echo "Combining sieve scripts from '$SIEVES_DIR'..."
-for sieve_file in $sieve_files; do
+for sieve_file in "${sieve_files[@]}"; do
     echo "# ===== From: $sieve_file =====" >> "$OUTPUT_FILE"
     cat "$sieve_file" >> "$OUTPUT_FILE"
     echo "" >> "$OUTPUT_FILE"
 done
 
-echo "Successfully combined $(echo "$sieve_files" | wc -l) sieve file(s) into '$OUTPUT_FILE'."
+echo "Successfully combined ${#sieve_files[@]} sieve file(s) into '$OUTPUT_FILE'."
