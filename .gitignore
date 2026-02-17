@@ -1,0 +1,2 @@
+# Ignore combined sieve output files in root directory
+/*.sieve
